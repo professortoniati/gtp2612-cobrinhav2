@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07111f">
+<title>SNAKE NEXUS — Experimental Edition</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
+:root{--cyan:#54f6ff;--blue:#6688ff;--pink:#ff4fd8;--green:#7dff9b;--amber:#ffd166;--red:#ff5577;--bg:#050b15;--panel:rgba(9,22,40,.88);--line:rgba(84,246,255,.22)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:#eaf7ff;font-family:Rajdhani,Arial,sans-serif}
+body{min-height:100vh;overflow-x:hidden;background:radial-gradient(ellipse at 50% 0%,#13294b 0%,#081321 42%,#040811 100%)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;background-image:linear-gradient(rgba(84,246,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(84,246,255,.12) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 85%)}
+button{font:inherit;cursor:pointer}
+.app{width:min(1240px,96vw);margin:0 auto;padding:22px 0 28px;position:relative}
+header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:13px}.brand-mark{width:46px;height:46px;border:1px solid var(--cyan);border-radius:13px;display:grid;place-items:center;color:var(--cyan);font-size:25px;box-shadow:0 0 22px #54f6ff35,inset 0 0 15px #54f6ff18}
+h1{font:800 clamp(22px,4vw,34px) Orbitron,sans-serif;letter-spacing:3px;margin:0;color:#effcff;text-shadow:0 0 18px #54f6ff70}h1 span{color:var(--cyan)}.subtitle{font:600 11px Orbitron,sans-serif;letter-spacing:2px;color:#7898b9;margin-top:5px}
+.header-right{display:flex;align-items:center;gap:10px}.status{font:600 10px Orbitron,sans-serif;color:var(--green);letter-spacing:1px;border:1px solid #7dff9b55;padding:8px 11px;border-radius:20px;background:#7dff9b0b}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:16px;align-items:start}
+.game-panel,.side-panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 55px #0008,inset 0 1px #ffffff08;backdrop-filter:blur(12px)}
+.game-panel{padding:14px}.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.stat{padding:9px 11px;border:1px solid #ffffff12;background:#ffffff06;border-radius:10px;min-width:0}.stat label{display:block;font:600 9px Orbitron,sans-serif;color:#7796b6;letter-spacing:1px}.stat strong{font:700 22px Orbitron,sans-serif;color:#f2fbff;display:block;margin-top:4px}.stat small{font-size:11px;color:#8aa7c5}
+.canvas-wrap{position:relative;width:100%;max-width:720px;margin:auto;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:1px solid #54f6ff70;box-shadow:0 0 25px #54f6ff17, inset 0 0 30px #54f6ff12;background:#071321}
+canvas{width:100%;height:100%;display:block}
+.scanline{position:absolute;inset:0;pointer-events:none;background:linear-gradient(transparent 50%,#54f6ff05 50%);background-size:100% 4px;opacity:.5}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:rgba(3,9,19,.86);backdrop-filter:blur(7px);z-index:3}
+.overlay.hidden{display:none}.overlay h2{font:800 clamp(23px,5vw,38px) Orbitron,sans-serif;letter-spacing:2px;margin:0 0 10px;color:var(--cyan);text-shadow:0 0 25px #54f6ff80}.overlay p{max-width:440px;color:#b2c9df;font-size:18px;line-height:1.35;margin:4px 0 18px}
+.primary{border:1px solid var(--cyan);color:#06111d;background:var(--cyan);padding:12px 25px;border-radius:8px;font:700 12px Orbitron,sans-serif;letter-spacing:1px;box-shadow:0 0 22px #54f6ff55;transition:.2s}.primary:hover{transform:translateY(-2px);box-shadow:0 0 30px #54f6ff99}
+.secondary{border:1px solid #6688ff88;color:#c9d7ff;background:#6688ff16;padding:10px 16px;border-radius:8px;font:600 11px Orbitron,sans-serif;letter-spacing:.7px}.button-row{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.overlay .mini{font:600 10px Orbitron,sans-serif;color:#7898b9;letter-spacing:1px;margin-top:16px}
+.side-panel{padding:15px;display:flex;flex-direction:column;gap:14px}.section-title{font:700 11px Orbitron,sans-serif;letter-spacing:1.2px;color:var(--cyan);padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:9px}
+.event-card{border:1px solid #ffffff14;background:#ffffff06;border-radius:10px;padding:11px;min-height:76px}.event-name{font:700 13px Orbitron,sans-serif;color:#f1fbff}.event-desc{font-size:13px;color:#91abc6;margin-top:4px;line-height:1.2}.meter{height:5px;background:#ffffff12;border-radius:8px;overflow:hidden;margin-top:9px}.meter span{height:100%;display:block;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .2s}
+.power-list{display:grid;gap:7px}.power{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#b8cce0}.power b{font:600 10px Orbitron,sans-serif;color:var(--amber)}
+.log{height:125px;overflow:hidden;display:flex;flex-direction:column-reverse;gap:5px}.log p{margin:0;color:#8fa9c2;font-size:12px;line-height:1.2}.log p:first-child{color:#d8faff}
+.help{font-size:13px;color:#829bb5;line-height:1.4}.help b{color:#c7eaff}
+.bottom-bar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}.hint{font-size:13px;color:#7894af}.hint kbd{border:1px solid #ffffff25;border-radius:4px;padding:2px 6px;color:#d4eaff;background:#ffffff09}
+.mobile-controls{display:none;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,42px);gap:5px;justify-content:center;margin:14px auto 0}.mobile-controls button{border:1px solid #54f6ff55;background:#0d2035;color:var(--cyan);border-radius:8px;font-size:18px}
+.toast{position:absolute;left:50%;top:16%;transform:translate(-50%,-10px);padding:10px 16px;border:1px solid #54f6ff88;background:#061827ee;border-radius:8px;color:var(--cyan);font:700 11px Orbitron,sans-serif;letter-spacing:1px;opacity:0;pointer-events:none;transition:.25s;z-index:2;white-space:nowrap}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.side-panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.side-panel section:last-child{grid-column:1/-1}.app{width:min(760px,96vw)}}
+@media(max-width:560px){.app{padding-top:13px}.status{display:none}.game-panel{padding:8px}.hud{grid-template-columns:repeat(2,1fr)}.stat strong{font-size:19px}.side-panel{padding:11px;gap:10px}.mobile-controls{display:grid}.bottom-bar{justify-content:center}.hint{display:none}h1{letter-spacing:1.5px}.brand-mark{width:39px;height:39px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="brand-mark">⌁</div><div><h1>SNAKE <span>NEXUS</span></h1><div class="subtitle">EXPERIMENTAL EDITION // BUILD 01</div></div></div>
+  <div class="header-right"><div class="status">● SYSTEM ONLINE</div></div>
+</header>
+<div class="layout">
+<main class="game-panel">
+  <div class="hud">
+    <div class="stat"><label>SCORE</label><strong id="score">0000</strong><small>pontos</small></div>
+    <div class="stat"><label>BEST</label><strong id="best">0000</strong><small>recorde local</small></div>
+    <div class="stat"><label>LEVEL</label><strong id="level">01</strong><small id="levelName">Exploração</small></div>
+    <div class="stat"><label>INTEGRITY</label><strong id="lives">03</strong><small>escudos restantes</small></div>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="game" width="600" height="600" aria-label="Tabuleiro do Snake Nexus"></canvas>
+    <div class="scanline"></div><div class="toast" id="toast"></div>
+    <div class="overlay" id="startOverlay">
+      <h2>SNAKE NEXUS</h2><p>Uma anomalia dimensional foi detectada. Entre no sistema, colete energia e sobreviva ao caos.</p>
+      <button class="primary" id="startBtn">INICIAR MISSÃO</button>
+      <div class="mini">WASD / SETAS • P PAUSAR • ESPAÇO PODER</div>
+    </div>
+    <div class="overlay hidden" id="pauseOverlay">
+      <h2>PAUSADO</h2><p>O universo pode esperar. Respire, comandante.</p>
+      <button class="primary" id="resumeBtn">RETOMAR</button>
+    </div>
+    <div class="overlay hidden" id="overOverlay">
+      <h2 id="overTitle">SINAL PERDIDO</h2><p id="overText">A missão terminou.</p>
+      <div class="button-row"><button class="primary" id="againBtn">NOVA MISSÃO</button></div>
+    </div>
+  </div>
+  <div class="mobile-controls">
+    <span></span><button data-dir="up">▲</button><span></span>
+    <button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button>
+  </div>
+  <div class="bottom-bar"><div class="hint">Mover: <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> &nbsp; Pausar: <kbd>P</kbd> &nbsp; Poder: <kbd>ESPAÇO</kbd></div><button class="secondary" id="pauseBtn">Ⅱ PAUSAR</button></div>
+</main>
+<aside class="side-panel">
+  <section><div class="section-title">▸ ANOMALIA ATIVA</div><div class="event-card"><div class="event-name" id="eventName">Nenhuma anomalia</div><div class="event-desc" id="eventDesc">O espaço-tempo está estável... por enquanto.</div><div class="meter"><span id="eventMeter"></span></div></div></section>
+  <section><div class="section-title">▸ SISTEMAS DA COBRA</div><div class="power-list">
+    <div class="power"><span>Mutação</span><b id="mutation">VERDE</b></div>
+    <div class="power"><span>Habilidade</span><b id="ability">PRONTA</b></div>
+    <div class="power"><span>Clone fantasma</span><b id="ghostStatus">INATIVO</b></div>
+    <div class="power"><span>Chefe</span><b id="bossStatus">NÃO DETECTADO</b></div>
+  </div></section>
+  <section><div class="section-title">▸ REGISTRO DE BORDO</div><div class="log" id="log"><p>Sistema inicializado. Aguardando piloto...</p></div></section>
+  <section><div class="section-title">▸ PROTOCOLO</div><div class="help">Colete <b>núcleos de energia</b> para crescer. Portais transportam você pelo tabuleiro. Caixas misteriosas podem salvar ou sabotar a missão. Use seu poder com <b>ESPAÇO</b>.</div></section>
+</aside>
+</div>
+</div>
+<script>
+(() => {
+"use strict";
+const canvas=document.getElementById("game"),ctx=canvas.getContext("2d");
+const N=30,C=canvas.width/N,STORE="snake-nexus-best-v1";
+const $=id=>document.getElementById(id);
+const COLORS={cyan:"#54f6ff",blue:"#6688ff",pink:"#ff4fd8",green:"#7dff9b",amber:"#ffd166",red:"#ff5577",white:"#effcff"};
+let snake,food,box,portals,ghost,boss,particles,score,best,lives,level,tickNo,dir,nextDir,running=false,paused=false,loop=null,lastTime=0,acc=0,stepMs=125;
+let event=null,eventCooldown=0,eventClock=0,mutation="VERDE",mutationColor=COLORS.green,mutationUntil=0,abilityUntil=0,shieldUntil=0,slowUntil=0,ghostUntil=0,history=[],bossDefeated=0,toastTimer=null,keysLocked=false;
+best=Number(localStorage.getItem(STORE)||0);$("best").textContent=fmt(best);
+function fmt(n){return String(n).padStart(4,"0")}
+function rand(n){return Math.floor(Math.random()*n)}
+function posFree(p){return !snake.some(s=>s.x===p.x&&s.y===p.y)&&!(boss&&boss.parts.some(b=>b.x===p.x&&b.y===p.y))}
+function freeCell(){for(let i=0;i<900;i++){const p={x:rand(N),y:rand(N)};if(posFree(p)&&(!portals||!portals.some(q=>q.x===p.x&&q.y===p.y)))return p}return null}
+function log(msg){const p=document.createElement("p");p.textContent="› "+msg;$("log").prepend(p);while($("log").children.length>7)$("log").lastChild.remove()}
+function announce(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1700)}
+function updateHud(){$("score").textContent=fmt(score);$("best").textContent=fmt(best);$("level").textContent=String(level).padStart(2,"0");$("levelName").textContent=["Exploração","Instabilidade","Ruptura","Singularidade","Nexus"][Math.min(level-1,4)];$("lives").textContent=String(lives).padStart(2,"0");$("mutation").textContent=mutation;$("ability").textContent=Date.now()<shieldUntil?"ESCUDO":Date.now()<slowUntil?"TEMPO LENTO":"PRONTA";$("ghostStatus").textContent=ghost?"ATIVO":"INATIVO";$("bossStatus").textContent=boss?"AMEAÇA":"NÃO DETECTADO"}
+function reset(){snake=[{x:14,y:15},{x:13,y:15},{x:12,y:15}];dir={x:1,y:0};nextDir={x:1,y:0};score=0;lives=3;level=1;tickNo=0;stepMs=125;food=null;box=null;portals=null;ghost=null;boss=null;particles=[];history=[];event=null;eventCooldown=0;eventClock=0;mutation="VERDE";mutationColor=COLORS.green;mutationUntil=0;abilityUntil=0;shieldUntil=0;slowUntil=0;ghostUntil=0;bossDefeated=0;spawnFood();updateHud();draw()}
+function spawnFood(){food=freeCell();if(!food)winGame()}
+function spawnBox(){const p=freeCell();if(p)box={...p,life:75}}
+function spawnPortals(){let a=freeCell(),b=freeCell();if(!a||!b)return;for(let i=0;i<30&&a.x===b.x&&a.y===b.y;i++)b=freeCell();if(b)portals=[{...a,angle:0},{...b,angle:Math.PI}]}
+function start(){reset();$("startOverlay").classList.add("hidden");$("overOverlay").classList.add("hidden");$("pauseOverlay").classList.add("hidden");running=true;paused=false;lastTime=performance.now();requestAnimationFrame(frame);log("Missão iniciada. Boa sorte, piloto.");}
+function pause(){if(!running)return;paused=!paused;$("pauseOverlay").classList.toggle("hidden",!paused);$("pauseBtn").textContent=paused?"▶ CONTINUAR":"Ⅱ PAUSAR";if(!paused){lastTime=performance.now();requestAnimationFrame(frame)}}
+function endGame(won=false){running=false;paused=false;$("overTitle").textContent=won?"NEXUS DOMINADO":"SINAL PERDIDO";$("overText").textContent=won?`Você estabilizou a dimensão! Pontuação final: ${score}.`:`Pontuação: ${score} • Chefes derrotados: ${bossDefeated}. A galáxia precisa de você novamente.`;$("overOverlay").classList.remove("hidden");}
+function winGame(){endGame(true)}
+function setDir(x,y){if(x===-dir.x&&y===-dir.y)return;nextDir={x,y}}
+function frame(now){if(!running||paused)return;const dt=Math.min(50,now-lastTime);lastTime=now;acc+=dt;while(acc>=stepMs){tick();acc-=stepMs;if(!running)break}draw();if(running&&!paused)requestAnimationFrame(frame)}
+function tick(){tickNo++;dir=nextDir;const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};if(head.x<0||head.y<0||head.x>=N||head.y>=N){if(Date.now()<shieldUntil){head.x=(head.x+N)%N;head.y=(head.y+N)%N;shieldUntil=0;announce("ESCUDO ABSORVEU O IMPACTO");}else{return damage("Colisão com o limite")}}
+ let portalExit=null;if(portals){const index=portals.findIndex(p=>p.x===head.x&&p.y===head.y);if(index>=0){const exit=portals[1-index];portalExit={x:exit.x,y:exit.y};head.x=exit.x;head.y=exit.y;const old=dir;dir={x:-old.y,y:old.x};nextDir={...dir};announce("SALTO DIMENSIONAL");}}
+ const growing=food&&head.x===food.x&&head.y===food.y;
+ const body=growing?snake:snake.slice(0,-1);
+ if(mutation!=="VIOLETA"&&body.some(p=>p.x===head.x&&p.y===head.y)){if(Date.now()<shieldUntil){shieldUntil=0;announce("ESCUDO: COLISÃO ANULADA")}else return damage("Colisão com o próprio corpo")}
+ if(boss&&boss.parts.some(p=>p.x===head.x&&p.y===head.y)){return damage("Contato com entidade chefe")}
+ snake.unshift(head);if(!growing)snake.pop();history.unshift({...head});if(history.length>90)history.pop();
+ if(growing){score+=10;spawnFood();addBurst(head.x,head.y,mutationColor,16);if(boss){boss.hp--;log("Núcleo de energia atingiu o chefão: "+boss.hp+" de 3.");if(boss.hp<=0){boss=null;bossDefeated++;score+=100;announce("CHEFÃO DERROTADO // +100");log("Entidade Nexus neutralizada! +100 pontos.");}}if(score>best){best=score;localStorage.setItem(STORE,best)}if(score%50===0){level=Math.min(5,level+1);stepMs=Math.max(72,stepMs-7);log("Nível "+level+" alcançado.");announce("NÍVEL "+level+" // SINCRONIZADO")}if(score>=70&&!boss&&!bossDefeated)spawnBoss();}
+ if(box&&head.x===box.x&&head.y===box.y)collectBox();
+ if(box&&--box.life<=0){box=null;log("Caixa misteriosa desapareceu.");}
+ if(ghost){ghost.index++;if(ghost.index>=ghost.path.length){ghost=null;log("Eco temporal dissipado.")}}
+ if(boss)moveBoss();
+ if(portals&&tickNo%100===0){portals=null;log("Portais colapsaram.");}
+ if(event){event.remaining--;if(event.name==="SURTO DE VELOCIDADE")stepMs=76;if(event.name==="CAMPO INSTÁVEL"&&tickNo%8===0){const drift=[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}][rand(4)];if(!(drift.x===-dir.x&&drift.y===-dir.y))nextDir=drift}if(event.remaining<=0){if(event.name==="SURTO DE VELOCIDADE")stepMs=Math.max(72,125-(level-1)*7);endEvent()}}
+ if(!event){eventClock++;if(eventClock>=90+rand(90)&&eventCooldown<=0)triggerChaos()}
+ if(eventCooldown>0)eventCooldown--;
+ if(tickNo%170===0&&!box)spawnBox();
+ if(tickNo%220===0&&!portals)spawnPortals();
+ if(tickNo%240===0&&!ghost&&history.length>45)spawnGhost();
+ if(Date.now()>mutationUntil&&mutation!=="VERDE"){mutation="VERDE";mutationColor=COLORS.green;log("Mutação encerrada. Sistema estabilizado.")}
+ updateHud();
+}
+function damage(reason){if(Date.now()<shieldUntil){shieldUntil=0;announce("ESCUDO ABSORVEU O DANO");return}lives--;updateHud();addBurst(snake[0].x,snake[0].y,COLORS.red,24);if(lives<=0){log(reason+" // integridade esgotada.");endGame();return}snake=[{x:14,y:15},{x:13,y:15},{x:12,y:15}];dir={x:1,y:0};nextDir={x:1,y:0};log(reason+" // escudo de emergência ativado.");shieldUntil=Date.now()+2600;announce("INTEGRIDADE -1");}
+function collectBox(){box=null;const choices=["shield","slow","grow","shrink","mutation","ghost","points","chaos"];const prize=choices[rand(choices.length)];switch(prize){case"shield":shieldUntil=Date.now()+9000;announce("ESCUDO DE FASE // 9s");log("Caixa: escudo temporário.");break;case"slow":slowUntil=Date.now()+8000;stepMs=Math.min(175,stepMs+25);announce("DILATAÇÃO TEMPORAL");log("Caixa: tempo desacelerado.");setTimeout(()=>{if(Date.now()>=slowUntil)stepMs=Math.max(72,125-(level-1)*7)},8100);break;case"grow":for(let i=0;i<4;i++)snake.push({...snake[snake.length-1]});announce("CRESCIMENTO TURBO");break;case"shrink":snake=snake.slice(0,Math.max(2,snake.length-3));announce("COMPRESSÃO MOLECULAR");break;case"mutation":mutate();break;case"ghost":spawnGhost(true);break;case"points":score+=50;announce("+50 CRÉDITOS");break;case"chaos":triggerChaos(true);break}log("Caixa misteriosa: "+prize.toUpperCase());updateHud()}
+function mutate(){const modes=[["AZUL","#6688ff"],["RUBI","#ff5577"],["VIOLETA","#c084fc"],["DOURADA","#ffd166"]];const m=modes[rand(modes.length)];mutation=m[0];mutationColor=m[1];mutationUntil=Date.now()+10000;log("Cobra mutou: "+mutation);announce("MUTAÇÃO // "+mutation);if(mutation==="AZUL")shieldUntil=Date.now()+3500;if(mutation==="RUBI"){stepMs=Math.max(68,stepMs-18);setTimeout(()=>{if(mutation!=="RUBI")return;stepMs=Math.max(72,125-(level-1)*7)},10000)}if(mutation==="DOURADA")score+=20;if(mutation==="VIOLETA")log("Fase espectral: atravesse seu próprio corpo por 10 segundos.")}
+function spawnGhost(fromBox=false){const path=history.slice(0,Math.min(55,history.length)).reverse();if(path.length<10)return;ghost={path,index:0,life:fromBox?path.length:55};ghostUntil=Date.now()+7000;log("Eco fantasma detectado.");announce("ECO TEMPORAL MATERIALIZADO")}
+function triggerChaos(fromBox=false){eventClock=0;eventCooldown=140;const types=["FLUXO REVERSO","CHUVA DE FRAGMENTOS","CAMPO INSTÁVEL","SURTO DE VELOCIDADE","INVERSÃO DE EIXO"];const type=types[rand(types.length)];event={name:type,remaining:fromBox?35:55,total:fromBox?35:55};$("eventName").textContent=type;$("eventDesc").textContent=eventDescription(type);log("Diretor de caos iniciou: "+type);announce("ANOMALIA DETECTADA");}
+function eventDescription(t){return({"FLUXO REVERSO":"A direção dos controles será invertida por alguns instantes.","CHUVA DE FRAGMENTOS":"Fragmentos atravessam o setor. Evite os sinais vermelhos.","CAMPO INSTÁVEL":"A gravidade do setor altera sua trajetória.","SURTO DE VELOCIDADE":"O motor acelera. Reaja mais rápido!","INVERSÃO DE EIXO":"Os eixos horizontal e vertical foram trocados."})[t]}
+function endEvent(){log("Anomalia encerrada. Espaço-tempo estabilizado.");event=null;$("eventName").textContent="Nenhuma anomalia";$("eventDesc").textContent="O espaço-tempo está estável... por enquanto.";$("eventMeter").style.width="0%"}
+function moveBoss(){boss.moveTick++;if(boss.moveTick%3!==0)return;const target=snake[0];const h=boss.parts[0];let dx=Math.sign(target.x-h.x),dy=Math.sign(target.y-h.y);if(Math.random()<.35){if(Math.random()<.5)dx=0;else dy=0}let p={x:Math.max(1,Math.min(N-2,h.x+dx)),y:Math.max(1,Math.min(N-2,h.y+dy))};boss.parts.unshift(p);boss.parts.pop();if(boss.parts.some((q,i)=>i>0&&q.x===p.x&&q.y===p.y))boss.parts.pop();if(boss.moveTick%15===0){const b=boss.parts[rand(boss.parts.length)];addBurst(b.x,b.y,COLORS.pink,5)}}
+function spawnBoss(){const x=rand(20)+5,y=rand(20)+5;boss={parts:[{x,y},{x:x-1,y},{x:x-2,y}],moveTick:0,hp:3};$("bossStatus").textContent="AMEAÇA";log("ALERTA: entidade Nexus detectada!");announce("CHEFÃO // ENTIDADE NEXUS")}
+function addBurst(x,y,color,count){for(let i=0;i<count;i++)particles.push({x:(x+.5)*C,y:(y+.5)*C,vx:(Math.random()-.5)*4,vy:(Math.random()-.5)*4,life:25+rand(20),color})}
+function draw(){ctx.clearRect(0,0,600,600);ctx.fillStyle="#071321";ctx.fillRect(0,0,600,600);
+ // grid
+ ctx.strokeStyle="rgba(84,246,255,.075)";ctx.lineWidth=1;for(let i=0;i<=N;i++){ctx.beginPath();ctx.moveTo(i*C,0);ctx.lineTo(i*C,600);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*C);ctx.lineTo(600,i*C);ctx.stroke()}
+ // ambient stars
+ for(let i=0;i<35;i++){const x=(i*97+tickNo*.12)%600,y=(i*173)%600;ctx.fillStyle="rgba(150,210,255,.28)";ctx.fillRect(x,y,1.5,1.5)}
+ if(food){glow(COLORS.green,15);ctx.beginPath();ctx.arc((food.x+.5)*C,(food.y+.5)*C,7+Math.sin(tickNo*.15)*1.5,0,Math.PI*2);ctx.fillStyle=COLORS.green;ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#eaffef";ctx.beginPath();ctx.arc((food.x+.5)*C-2,(food.y+.5)*C-2,2,0,Math.PI*2);ctx.fill()}
+ if(box){glow(COLORS.amber,18);ctx.save();ctx.translate((box.x+.5)*C,(box.y+.5)*C);ctx.rotate(Math.PI/4);ctx.fillStyle=COLORS.amber;ctx.fillRect(-7,-7,14,14);ctx.strokeStyle="#fff4cf";ctx.strokeRect(-7,-7,14,14);ctx.restore();ctx.shadowBlur=0}
+ if(portals)portals.forEach((p,i)=>{glow(i?COLORS.pink:COLORS.blue,20);ctx.beginPath();ctx.ellipse((p.x+.5)*C,(p.y+.5)*C,7,10,tickNo*.03,0,Math.PI*2);ctx.strokeStyle=i?COLORS.pink:COLORS.blue;ctx.lineWidth=3;ctx.stroke();ctx.shadowBlur=0})
+ if(boss){boss.parts.forEach((p,i)=>{glow(COLORS.pink,16);ctx.fillStyle=i===0?"#ffb1ed":COLORS.pink;ctx.beginPath();ctx.arc((p.x+.5)*C,(p.y+.5)*C,i===0?9:7,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0})}
+ if(ghost&&ghost.path[ghost.index]){const p=ghost.path[ghost.index];glow(COLORS.blue,14);ctx.globalAlpha=.48;ctx.fillStyle=COLORS.blue;ctx.beginPath();ctx.arc((p.x+.5)*C,(p.y+.5)*C,8,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0}
+ snake.forEach((p,i)=>{const head=i===0;glow(mutationColor,head?20:9);ctx.fillStyle=head?"#f3ffff":mutationColor;roundRect(p.x*C+2,p.y*C+2,C-4,C-4,head?7:5);ctx.fill();ctx.shadowBlur=0;if(head){ctx.fillStyle="#061321";const ex=(dir.x===1?C*.68:dir.x===-1?C*.28:C*.38),ey=(dir.y===1?C*.68:dir.y===-1?C*.28:C*.38);ctx.beginPath();ctx.arc(p.x*C+ex,p.y*C+ey,2.1,0,Math.PI*2);ctx.fill()}})
+ particles.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life/40);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,3,3);p.x+=p.vx;p.y+=p.vy;p.life--});ctx.globalAlpha=1;particles=particles.filter(p=>p.life>0);
+ if(event){$("eventMeter").style.width=(event.remaining/event.total*100)+"%";if(event.name==="CHUVA DE FRAGMENTOS"&&tickNo%9===0){const x=rand(N),y=rand(N);if(snake.some(p=>p.x===x&&p.y===y))damage("Fragmento de anomalia")}}
+}
+function glow(color,blur){ctx.shadowColor=color;ctx.shadowBlur=blur}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function activatePower(){if(!running||paused)return;if(Date.now()<abilityUntil)return;abilityUntil=Date.now()+5000;shieldUntil=Date.now()+5000;announce("PROTOCOLO DE FASE ATIVADO");log("Escudo de fase ativado por 5 segundos.");updateHud()}
+document.addEventListener("keydown",e=>{const k=e.key.toLowerCase();if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k))e.preventDefault();if(k==="p"){pause();return}if(k===" "){activatePower();return}if(!running||paused)return;const map={arrowup:[0,-1],w:[0,-1],arrowdown:[0,1],s:[0,1],arrowleft:[-1,0],a:[-1,0],arrowright:[1,0],d:[1,0]};if(map[k]){let [x,y]=map[k];if(event?.name==="FLUXO REVERSO"){x=-x;y=-y}if(event?.name==="INVERSÃO DE EIXO")[x,y]=[y,x];setDir(x,y)}});
+document.querySelectorAll("[data-dir]").forEach(b=>b.addEventListener("click",()=>{const d={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[b.dataset.dir];if(d)setDir(...d)}));
+$("startBtn").onclick=start;$("againBtn").onclick=start;$("resumeBtn").onclick=pause;$("pauseBtn").onclick=pause;
+reset();
+})();
+</script>
+</body>
+</html>
